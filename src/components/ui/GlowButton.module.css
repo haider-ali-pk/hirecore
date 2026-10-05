@@ -1,0 +1,184 @@
+/* ==========================================================================
+   GlowButton
+   Dark pill with a lime-to-white gradient border and a circular arrow chip.
+   Variants: primary (gradient border), solid (lime fill), ghost (glass).
+   ========================================================================== */
+
+.button {
+  --h: 52px;
+  --fs: 0.98rem;
+  --pad: 1.6rem;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  height: var(--h);
+  padding: 0 var(--pad);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: var(--fs);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text-primary);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out);
+}
+
+/* The global focus ring squares off rounded elements; keep the pill shape. */
+.button:focus-visible {
+  border-radius: var(--radius-pill);
+}
+
+.button:active {
+  transform: scale(0.985);
+}
+
+.button:disabled,
+.button[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.button[aria-busy="true"] {
+  pointer-events: none;
+}
+
+/* ---- Sizes ---- */
+.sm {
+  --h: 40px;
+  --fs: 0.875rem;
+  --pad: 1.2rem;
+}
+
+.md {
+  --h: 52px;
+}
+
+.lg {
+  --h: 60px;
+  --fs: 1.05rem;
+  --pad: 1.9rem;
+}
+
+.withArrow {
+  padding-right: 7px;
+}
+
+.label {
+  display: inline-block;
+}
+
+/* ---- Arrow chip ---- */
+.chip {
+  display: grid;
+  place-items: center;
+  width: calc(var(--h) - 18px);
+  height: calc(var(--h) - 18px);
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  color: var(--text-primary);
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    color var(--duration-base) var(--ease-out);
+}
+
+.chip svg {
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.button:hover .chip svg {
+  transform: translate(1.5px, -1.5px);
+}
+
+/* ---- Primary: dark pill, gradient border ---- */
+.primary {
+  --btn-surface: #07090d;
+
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--btn-surface), var(--btn-surface)) padding-box,
+    var(--gradient-border) border-box;
+  color: #f4f5f7;
+}
+
+.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--glow-accent);
+}
+
+.primary:hover .chip {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---- Solid: lime fill ---- */
+.solid {
+  border: 1.5px solid transparent;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.solid .chip {
+  border-color: rgba(10, 15, 2, 0.35);
+  color: var(--accent-ink);
+}
+
+.solid:hover {
+  transform: translateY(-1px);
+  background: var(--accent-strong);
+  box-shadow: var(--glow-accent);
+}
+
+.solid:hover .chip {
+  background: var(--accent-ink);
+  border-color: var(--accent-ink);
+  color: var(--accent);
+}
+
+/* ---- Ghost: glass ---- */
+.ghost {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  color: var(--text-primary);
+}
+
+.ghost:hover {
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.ghost .chip {
+  border-color: var(--border-strong);
+}
+
+/* ---- Loading spinner ---- */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,91 @@
+/* ==========================================================================
+   Footer
+   Brand column plus three link columns, then a thin legal row.
+   ========================================================================== */
+
+.footer {
+  position: relative;
+  border-top: 1px solid var(--border);
+  background: var(--background-raised);
+  padding: var(--space-8) 0 var(--space-6);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+  gap: var(--space-7) var(--space-6);
+}
+
+.brand {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.tagline {
+  max-width: 22rem;
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+.column {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.heading {
+  color: var(--text-muted);
+}
+
+.links {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.link {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.link:hover {
+  color: var(--accent);
+}
+
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.copy {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

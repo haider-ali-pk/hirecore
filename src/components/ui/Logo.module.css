@@ -1,0 +1,47 @@
+/* ==========================================================================
+   Logo
+   Wordmark with a coloured full stop. `light` is for dark backgrounds,
+   `dark` is for the silver navbar.
+   ========================================================================== */
+
+.logo {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sm {
+  font-size: 1.35rem;
+}
+
+.md {
+  font-size: 1.75rem;
+}
+
+.lg {
+  font-size: 2.25rem;
+}
+
+.dot {
+  margin-left: 0.02em;
+}
+
+.light {
+  color: var(--text-primary);
+}
+
+.light .dot {
+  color: var(--accent);
+}
+
+.dark {
+  color: var(--nav-text);
+}
+
+.dark .dot {
+  color: #23925a;
+}

@@ -1,0 +1,85 @@
+/* ==========================================================================
+   CallToAction
+   Closing section: headline on top, the orbit galaxy in the middle, copy and
+   buttons underneath. The gap between the two text blocks is the space the
+   orbit occupies.
+   ========================================================================== */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-height: clamp(640px, 100svh, 920px);
+  padding: var(--space-9) var(--container-pad);
+  overflow: hidden;
+  text-align: center;
+}
+
+.field {
+  z-index: -1;
+}
+
+/* Blend the top edge into the previous section */
+.section::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 22%;
+  background: linear-gradient(to bottom, var(--background), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.content {
+  display: grid;
+  justify-items: center;
+  gap: clamp(8rem, 22vh, 13rem);
+  width: 100%;
+  max-width: 62rem;
+}
+
+.top,
+.bottom {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-5);
+}
+
+.title {
+  max-width: 18ch;
+  font-size: var(--text-hero);
+  line-height: var(--leading-tight);
+}
+
+.lead {
+  max-width: 34rem;
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 720px) {
+  .section {
+    padding: var(--space-8) var(--container-pad);
+  }
+
+  .content {
+    gap: 7rem;
+  }
+
+  .actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+}
