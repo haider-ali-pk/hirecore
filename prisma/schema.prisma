@@ -1,0 +1,127 @@
+// HireCore — core multi-tenant schema (Phase 0)
+//
+// Tenancy rules (enforced in the service layer, not by Prisma):
+//   SUPER_ADMIN        -> tenantId is null (platform level)
+//   CANDIDATE          -> tenantId is null (one global account, applies to many companies)
+//   every other role   -> tenantId is required
+//
+// Every tenant-owned table carries tenantId, and every query on it must filter by it.
+// Emails are stored lowercase (normalise before every write and lookup).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  RECRUITER
+  HIRING_MANAGER
+  EMPLOYEE
+  CANDIDATE
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+}
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum PlanTier {
+  STARTER
+  GROWTH
+  ENTERPRISE
+}
+
+model Tenant {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  status      TenantStatus @default(TRIAL)
+  plan        PlanTier     @default(STARTER)
+  logoUrl     String?
+  timezone    String       @default("UTC")
+  trialEndsAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  users       User[]
+  departments Department[]
+  auditLogs   AuditLog[]
+
+  @@map("tenants")
+}
+
+model User {
+  id              String     @id @default(cuid())
+  tenantId        String?
+  departmentId    String?
+  email           String     @unique
+  name            String
+  phone           String?
+  passwordHash    String
+  role            UserRole
+  status          UserStatus @default(ACTIVE)
+  avatarUrl       String?
+  emailVerifiedAt DateTime?
+  lastLoginAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  tenant     Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  auditLogs  AuditLog[]
+
+  @@index([tenantId, role])
+  @@index([tenantId, status])
+  @@index([departmentId])
+  @@map("users")
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  users  User[]
+
+  @@unique([tenantId, name])
+  @@map("departments")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  actor  User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
