@@ -1,4 +1,4 @@
-// HireCore — core multi-tenant schema (Phase 0)
+// HireCore — core multi-tenant schema
 //
 // Tenancy rules (enforced in the service layer, not by Prisma):
 //   SUPER_ADMIN        -> tenantId is null (platform level)
@@ -59,6 +59,7 @@ model Tenant {
 
   users       User[]
   departments Department[]
+  invitations Invitation[]
   auditLogs   AuditLog[]
 
   @@map("tenants")
@@ -80,9 +81,10 @@ model User {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  tenant     Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  auditLogs  AuditLog[]
+  tenant          Tenant?      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  department      Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  invitationsSent Invitation[]
+  auditLogs       AuditLog[]
 
   @@index([tenantId, role])
   @@index([tenantId, status])
@@ -103,6 +105,31 @@ model Department {
 
   @@unique([tenantId, name])
   @@map("departments")
+}
+
+// A pending offer to join a tenant. The raw token is never stored: only its
+// SHA-256 hash. The User row is created when the invitation is accepted.
+// Status is derived: accepted / revoked / expired (expiresAt) / pending.
+// Candidates sign up on their own, so invitable roles are the tenant roles only.
+model Invitation {
+  id          String    @id @default(cuid())
+  tenantId    String
+  invitedById String?
+  email       String
+  name        String?
+  role        UserRole
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  invitedBy User?  @relation(fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, email])
+  @@index([email])
+  @@map("invitations")
 }
 
 model AuditLog {
