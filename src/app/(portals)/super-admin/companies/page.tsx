@@ -3,6 +3,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight, Search, ShieldCheck } from "lucide-react";
 import DataTable from "@/components/ui/DataTable";
+import GlowButton from "@/components/ui/GlowButton";
 import PageHeader from "@/components/ui/PageHeader";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { prisma } from "@/lib/prisma";
@@ -18,6 +19,7 @@ import styles from "./page.module.css";
 export const metadata: Metadata = { title: "Companies" };
 
 const BASE_PATH = "/super-admin/companies";
+const NEW_PATH = "/super-admin/companies/new";
 const PAGE_SIZE = 20;
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
@@ -112,6 +114,7 @@ export default async function CompaniesPage({
         eyebrowIcon={<ShieldCheck size={16} strokeWidth={2} />}
         title="Companies"
         description="Every workspace on HireCore, with its plan, status and team size."
+        actions={<GlowButton href={NEW_PATH}>New company</GlowButton>}
       />
 
       <div className={styles.toolbar}>
@@ -162,9 +165,13 @@ export default async function CompaniesPage({
               ? "Try a different search or status filter."
               : "Companies you create appear here with their plan, status and team size."}
           </p>
-          {hasFilters && (
+          {hasFilters ? (
             <Link href={BASE_PATH} className={styles.emptyLink}>
               Clear filters
+            </Link>
+          ) : (
+            <Link href={NEW_PATH} className={styles.emptyLink}>
+              Create the first company
             </Link>
           )}
         </div>

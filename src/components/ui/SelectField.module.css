@@ -1,0 +1,23 @@
+.selectControl {
+  position: relative;
+}
+
+/* Higher specificity than TextField's .input so the extra padding wins. */
+.selectControl .select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.75rem;
+  cursor: pointer;
+}
+
+.select option {
+  background: #101727;
+  color: var(--text-primary);
+}
+
+.caret {
+  position: absolute;
+  right: 1rem;
+  pointer-events: none;
+  color: var(--text-secondary);
+}

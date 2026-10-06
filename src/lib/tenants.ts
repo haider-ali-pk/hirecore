@@ -11,6 +11,19 @@ export const TENANT_STATUSES = [
   "CANCELLED",
 ] as const satisfies readonly TenantStatus[];
 
+export const PLAN_TIERS = [
+  "STARTER",
+  "GROWTH",
+  "ENTERPRISE",
+] as const satisfies readonly PlanTier[];
+
+/** Length of a new workspace's free trial. */
+export const TRIAL_DAYS = 14;
+
+export function trialEndFrom(now: Date = new Date()): Date {
+  return new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+}
+
 export const TENANT_STATUS_META: Record<
   TenantStatus,
   { label: string; tone: BadgeTone }
