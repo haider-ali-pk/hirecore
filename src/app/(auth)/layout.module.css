@@ -1,0 +1,22 @@
+.shell {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.field {
+  z-index: -1;
+}
+
+.header {
+  padding: clamp(1rem, 2.5vw, 2rem) var(--container-pad);
+}
+
+.main {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--container-pad) var(--space-9);
+}
