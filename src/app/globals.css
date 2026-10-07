@@ -7,6 +7,13 @@
 :root {
   color-scheme: dark;
 
+  /* ---- Global size ----
+     Scales every rem-based size (type and spacing) at once.
+     1 = browser default, 0.9375 = 15px, 0.9 = 14.4px, 0.875 = 14px.
+     It is a percentage of the browser's own font size, so people who
+     increase their default text size still get larger text. */
+  --root-scale: 0.9375;
+
   /* ---- Brand ---- */
   --accent: #b6d93c;
   --accent-strong: #c9ee45;
@@ -187,6 +194,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  font-size: calc(100% * var(--root-scale));
   scroll-behavior: smooth;
 }
 
