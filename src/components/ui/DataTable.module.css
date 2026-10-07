@@ -48,6 +48,15 @@
   letter-spacing: -0.01em;
 }
 
+.table td strong a {
+  color: inherit;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.table td strong a:hover {
+  color: var(--accent);
+}
+
 .table td small {
   display: block;
   margin-top: 0.15rem;

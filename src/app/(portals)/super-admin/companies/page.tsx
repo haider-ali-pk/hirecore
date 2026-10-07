@@ -192,7 +192,9 @@ export default async function CompaniesPage({
               return (
                 <tr key={company.id}>
                   <td>
-                    <strong>{company.name}</strong>
+                    <strong>
+                      <Link href={`${BASE_PATH}/${company.id}`}>{company.name}</Link>
+                    </strong>
                     <small>{company.slug}</small>
                   </td>
                   <td>{PLAN_LABEL[company.plan]}</td>

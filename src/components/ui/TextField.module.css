@@ -6,6 +6,9 @@
 
 .field {
   display: grid;
+  /* Pack label, control and message at the top even when a grid or flex
+     parent stretches this field to match a taller neighbour. */
+  align-content: start;
   gap: 0.5rem;
 }
 
