@@ -11,6 +11,8 @@ import { ROLE_LABEL } from "@/lib/roles";
 import { requireRole } from "@/lib/session";
 import { PLAN_LABEL, TENANT_STATUS_META } from "@/lib/tenants";
 import { USER_STATUS_META } from "@/lib/users";
+import CompanyActivity from "./CompanyActivity";
+import InvitationsSection from "./InvitationsSection";
 import styles from "./page.module.css";
 import PlanForm from "./PlanForm";
 import StatusControls from "./StatusControls";
@@ -225,6 +227,10 @@ export default async function CompanyDetailPage({
           </DataTable>
         )}
       </section>
+
+      <InvitationsSection tenantId={company.id} />
+
+      <CompanyActivity tenantId={company.id} />
     </div>
   );
 }
