@@ -21,6 +21,20 @@ export const ROLE_LABEL: Record<Role, string> = {
   CANDIDATE: "Candidate",
 };
 
+/** Portals each role may open. Company admins can also use the recruiting workspace. */
+const PORTAL_ACCESS: Record<Role, readonly Role[]> = {
+  SUPER_ADMIN: ["SUPER_ADMIN"],
+  COMPANY_ADMIN: ["COMPANY_ADMIN", "RECRUITER"],
+  RECRUITER: ["RECRUITER"],
+  HIRING_MANAGER: ["HIRING_MANAGER"],
+  EMPLOYEE: ["EMPLOYEE"],
+  CANDIDATE: ["CANDIDATE"],
+};
+
+export function canAccessPortal(role: Role, portal: Role): boolean {
+  return PORTAL_ACCESS[role].includes(portal);
+}
+
 /** Where a signed-in user of this role lands. */
 export function homeForRole(role: Role): string {
   return PORTAL_HOME[role];
