@@ -7,7 +7,9 @@ export type IconKey =
   | "users"
   | "plans"
   | "audit"
-  | "settings";
+  | "settings"
+  | "jobs"
+  | "pipeline";
 
 export interface NavItem {
   label: string;
@@ -21,13 +23,16 @@ const overview = (role: Role): NavItem => ({
   icon: "overview",
 });
 
+const jobs: NavItem = { label: "Jobs", href: "/recruiter/jobs", icon: "jobs" };
+
 export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   SUPER_ADMIN: [
     overview("SUPER_ADMIN"),
     { label: "Companies", href: "/super-admin/companies", icon: "tenants" },
+    { label: "Users", href: "/super-admin/users", icon: "users" },
   ],
-  COMPANY_ADMIN: [overview("COMPANY_ADMIN")],
-  RECRUITER: [overview("RECRUITER")],
+  COMPANY_ADMIN: [overview("COMPANY_ADMIN"), jobs],
+  RECRUITER: [overview("RECRUITER"), jobs],
   HIRING_MANAGER: [overview("HIRING_MANAGER")],
   EMPLOYEE: [overview("EMPLOYEE")],
   CANDIDATE: [overview("CANDIDATE")],

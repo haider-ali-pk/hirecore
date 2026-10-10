@@ -7,7 +7,9 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import {
   BadgeCheck,
+  Briefcase,
   Building2,
+  Columns3,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -32,6 +34,8 @@ const ICONS: Record<IconKey, LucideIcon> = {
   plans: BadgeCheck,
   audit: ScrollText,
   settings: Settings,
+  jobs: Briefcase,
+  pipeline: Columns3,
 };
 
 interface PortalShellProps {

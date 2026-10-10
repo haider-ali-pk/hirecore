@@ -1,0 +1,16 @@
+.page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.companyLink {
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.companyLink:hover {
+  color: var(--accent);
+}
+
+.muted {
+  color: var(--text-muted);
+}

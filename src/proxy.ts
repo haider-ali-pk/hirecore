@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { homeForRole, roleForPath } from "@/lib/roles";
+import { canAccessPortal, homeForRole, roleForPath } from "@/lib/roles";
 
 /*
   Optimistic redirects only. Do not treat this as the authorisation layer:
@@ -21,8 +21,8 @@ export const proxy = auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Signed in, but this portal belongs to a different role.
-  if (session.user.role !== portalRole) {
+  // Signed in, but this portal is not open to their role.
+  if (!canAccessPortal(session.user.role, portalRole)) {
     return NextResponse.redirect(new URL(homeForRole(session.user.role), req.nextUrl));
   }
 

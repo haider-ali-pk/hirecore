@@ -1,0 +1,12 @@
+.control {
+  align-items: stretch;
+}
+
+/* Two classes beat TextField's single-class .input height. */
+.control .textarea {
+  height: auto;
+  min-height: 9rem;
+  padding: 0.85rem 1rem;
+  line-height: 1.55;
+  resize: vertical;
+}

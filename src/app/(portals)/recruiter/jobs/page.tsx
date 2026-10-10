@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
 import DataTable from "@/components/ui/DataTable";
 import GlowButton from "@/components/ui/GlowButton";
 import {
@@ -11,21 +10,22 @@ import {
   Toolbar,
 } from "@/components/ui/ListControls";
 import PageHeader from "@/components/ui/PageHeader";
+import PageStack from "@/components/ui/PageStack";
 import StatusBadge from "@/components/ui/StatusBadge";
-import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/session";
 import {
-  PLAN_LABEL,
-  TENANT_STATUSES,
-  TENANT_STATUS_META,
-  isTenantStatus,
-} from "@/lib/tenants";
-import styles from "./page.module.css";
+  EMPLOYMENT_LABEL,
+  JOB_STATUSES,
+  JOB_STATUS_META,
+  WORK_MODE_LABEL,
+  isJobStatus,
+} from "@/lib/jobs";
+import { prisma } from "@/lib/prisma";
+import { requireTenantPortal } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Companies" };
+export const metadata: Metadata = { title: "Jobs" };
 
-const BASE_PATH = "/super-admin/companies";
-const NEW_PATH = "/super-admin/companies/new";
+const BASE_PATH = "/recruiter/jobs";
+const NEW_PATH = "/recruiter/jobs/new";
 const PAGE_SIZE = 20;
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
@@ -49,52 +49,47 @@ function listHref(state: { status?: string; q?: string; page?: number }) {
   return query ? `${BASE_PATH}?${query}` : BASE_PATH;
 }
 
-export default async function CompaniesPage({
+export default async function JobsPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  await requireRole("SUPER_ADMIN");
+  const { tenantId } = await requireTenantPortal("RECRUITER");
 
   const params = await searchParams;
   const statusParam = first(params.status);
-  const status = isTenantStatus(statusParam) ? statusParam : undefined;
+  const status = isJobStatus(statusParam) ? statusParam : undefined;
   const q = (first(params.q) ?? "").trim().slice(0, 80);
   const requestedPage = Math.max(1, Number.parseInt(first(params.page) ?? "1", 10) || 1);
 
   const where = {
+    tenantId,
     ...(status ? { status } : {}),
-    ...(q
-      ? {
-          OR: [
-            { name: { contains: q, mode: "insensitive" as const } },
-            { slug: { contains: q, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
+    ...(q ? { title: { contains: q, mode: "insensitive" as const } } : {}),
   };
 
   const [grouped, total] = await Promise.all([
-    prisma.tenant.groupBy({ by: ["status"], _count: { _all: true } }),
-    prisma.tenant.count({ where }),
+    prisma.job.groupBy({ by: ["status"], where: { tenantId }, _count: { _all: true } }),
+    prisma.job.count({ where }),
   ]);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const page = Math.min(requestedPage, pageCount);
 
-  const companies = await prisma.tenant.findMany({
+  const jobs = await prisma.job.findMany({
     where,
     orderBy: { createdAt: "desc" },
     skip: (page - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
     select: {
       id: true,
-      name: true,
-      slug: true,
+      title: true,
+      location: true,
+      employmentType: true,
+      workMode: true,
       status: true,
-      plan: true,
       createdAt: true,
-      _count: { select: { users: true } },
+      _count: { select: { applications: true } },
     },
   });
 
@@ -109,9 +104,9 @@ export default async function CompaniesPage({
       count: totalAll,
       active: status === undefined,
     },
-    ...TENANT_STATUSES.map((value) => ({
+    ...JOB_STATUSES.map((value) => ({
       key: value,
-      label: TENANT_STATUS_META[value].label,
+      label: JOB_STATUS_META[value].label,
       href: listHref({ status: value, q }),
       count: counts.get(value) ?? 0,
       active: status === value,
@@ -121,71 +116,71 @@ export default async function CompaniesPage({
   const hasFilters = Boolean(status || q);
 
   return (
-    <div className={styles.page}>
+    <PageStack>
       <PageHeader
-        eyebrow="Super admin"
-        eyebrowIcon={<ShieldCheck size={16} strokeWidth={2} />}
-        title="Companies"
-        description="Every workspace on HireCore, with its plan, status and team size."
-        actions={<GlowButton href={NEW_PATH}>New company</GlowButton>}
+        eyebrow="Recruiting"
+        title="Jobs"
+        description="Create roles, publish them to your careers page and track applications."
+        actions={<GlowButton href={NEW_PATH}>New job</GlowButton>}
       />
 
       <Toolbar>
         <FilterChips label="Filter by status" items={chips} />
-
         <SearchForm
           action={BASE_PATH}
           query={q}
-          placeholder="Search by name or slug"
-          label="Search companies"
+          placeholder="Search by job title"
+          label="Search jobs"
           hidden={status ? { status } : undefined}
         />
       </Toolbar>
 
-      {companies.length === 0 ? (
+      {jobs.length === 0 ? (
         <EmptyState
-          title={hasFilters ? "No companies match" : "No companies yet"}
+          title={hasFilters ? "No jobs match" : "No jobs yet"}
           text={
             hasFilters
               ? "Try a different search or status filter."
-              : "Companies you create appear here with their plan, status and team size."
+              : "Create your first job and publish it to your careers page."
           }
           action={
             hasFilters
               ? { href: BASE_PATH, label: "Clear filters" }
-              : { href: NEW_PATH, label: "Create the first company" }
+              : { href: NEW_PATH, label: "Create the first job" }
           }
         />
       ) : (
-        <DataTable label="Companies">
+        <DataTable label="Jobs">
           <thead>
             <tr>
-              <th scope="col">Company</th>
-              <th scope="col">Plan</th>
+              <th scope="col">Job</th>
+              <th scope="col">Type</th>
+              <th scope="col">Mode</th>
               <th scope="col">Status</th>
-              <th scope="col">Users</th>
+              <th scope="col">Applications</th>
               <th scope="col">Created</th>
             </tr>
           </thead>
           <tbody>
-            {companies.map((company) => {
-              const meta = TENANT_STATUS_META[company.status];
+            {jobs.map((job) => {
+              const meta = JOB_STATUS_META[job.status];
               return (
-                <tr key={company.id}>
+                <tr key={job.id}>
                   <td>
                     <strong>
-                      <Link href={`${BASE_PATH}/${company.id}`}>{company.name}</Link>
+                      <Link href={`${BASE_PATH}/${job.id}`}>{job.title}</Link>
                     </strong>
-                    <small>{company.slug}</small>
+                    <small>{job.location}</small>
                   </td>
-                  <td>{PLAN_LABEL[company.plan]}</td>
+                  <td>{EMPLOYMENT_LABEL[job.employmentType]}</td>
+                  <td>{WORK_MODE_LABEL[job.workMode]}</td>
                   <td>
                     <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
                   </td>
-                  <td>{company._count.users}</td>
+                  <td>{job._count.applications}</td>
                   <td>
-                    <time dateTime={company.createdAt.toISOString()}>
-                      {dateFormat.format(company.createdAt)}
+                    <time dateTime={job.createdAt.toISOString()}>
+                      {dateFormat.format(job.createdAt)}
                     </time>
                   </td>
                 </tr>
@@ -201,6 +196,6 @@ export default async function CompaniesPage({
         prevHref={page > 1 ? listHref({ status, q, page: page - 1 }) : null}
         nextHref={page < pageCount ? listHref({ status, q, page: page + 1 }) : null}
       />
-    </div>
+    </PageStack>
   );
 }

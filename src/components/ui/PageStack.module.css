@@ -1,4 +1,4 @@
-.page {
+.stack {
   display: grid;
   gap: var(--space-6);
 }

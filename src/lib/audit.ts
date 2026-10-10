@@ -2,11 +2,14 @@ import { ROLE_LABEL } from "@/lib/roles";
 import type { Role } from "@/lib/roles";
 import { PLAN_LABEL, TENANT_STATUS_META } from "@/lib/tenants";
 import type { PlanTier, TenantStatus } from "@/lib/tenants";
+import { USER_STATUS_META } from "@/lib/users";
+import type { UserStatus } from "@/lib/users";
 
 const ACTION_LABELS: Record<string, string> = {
   "auth.login": "Signed in",
   "auth.logout": "Signed out",
   "user.created": "Account created",
+  "user.status_changed": "Account status changed",
   "tenant.created": "Company created",
   "tenant.plan_changed": "Plan changed",
   "tenant.status_changed": "Status changed",
@@ -37,6 +40,13 @@ const statusLabel = (value: unknown): string => {
     : (raw ?? "Unknown");
 };
 
+const userStatusLabel = (value: unknown): string => {
+  const raw = text(value);
+  return raw && raw in USER_STATUS_META
+    ? USER_STATUS_META[raw as UserStatus].label
+    : (raw ?? "Unknown");
+};
+
 const planLabel = (value: unknown): string => {
   const raw = text(value);
   return raw && raw in PLAN_LABEL ? PLAN_LABEL[raw as PlanTier] : (raw ?? "Unknown");
@@ -56,6 +66,15 @@ export function auditDetail(action: string, metadata: unknown): string | null {
       const change = `${statusLabel(metadata.from)} → ${statusLabel(metadata.to)}`;
       const reason = text(metadata.reason);
       return reason ? `${change} · ${reason}` : change;
+    }
+
+    case "user.status_changed": {
+      const parts = [
+        text(metadata.email),
+        `${userStatusLabel(metadata.from)} → ${userStatusLabel(metadata.to)}`,
+        text(metadata.reason),
+      ].filter(Boolean);
+      return parts.join(" · ");
     }
 
     case "tenant.plan_changed":

@@ -2,7 +2,7 @@ import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
-import { homeForRole } from "@/lib/roles";
+import { canAccessPortal, homeForRole } from "@/lib/roles";
 import type { Role } from "@/lib/roles";
 
 export type SessionUser = Session["user"];
@@ -29,6 +29,19 @@ export async function requireTenantRole(
   role: Role
 ): Promise<{ user: SessionUser; tenantId: string }> {
   const user = await requireRole(role);
+  if (!user.tenant_id) notFound();
+  return { user, tenantId: user.tenant_id };
+}
+
+/**
+ * Like requireTenantRole, but accepts any role allowed into `portal`
+ * (e.g. company admins in the recruiting workspace).
+ */
+export async function requireTenantPortal(
+  portal: Role
+): Promise<{ user: SessionUser; tenantId: string }> {
+  const user = await requireUser();
+  if (!canAccessPortal(user.role, portal)) redirect(homeForRole(user.role));
   if (!user.tenant_id) notFound();
   return { user, tenantId: user.tenant_id };
 }

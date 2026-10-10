@@ -1,4 +1,4 @@
-// HireCore — core multi-tenant schema
+// HireCore — multi-tenant schema
 //
 // Tenancy rules (enforced in the service layer, not by Prisma):
 //   SUPER_ADMIN        -> tenantId is null (platform level)
@@ -45,6 +45,35 @@ enum PlanTier {
   ENTERPRISE
 }
 
+enum JobStatus {
+  DRAFT
+  OPEN
+  PAUSED
+  CLOSED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum ApplicationStage {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+}
+
 model Tenant {
   id          String       @id @default(cuid())
   name        String
@@ -57,10 +86,14 @@ model Tenant {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  users       User[]
-  departments Department[]
-  invitations Invitation[]
-  auditLogs   AuditLog[]
+  users        User[]
+  departments  Department[]
+  invitations  Invitation[]
+  jobs         Job[]
+  candidates   Candidate[]
+  applications Application[]
+  resumes      Resume[]
+  auditLogs    AuditLog[]
 
   @@map("tenants")
 }
@@ -84,6 +117,7 @@ model User {
   tenant          Tenant?      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   department      Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   invitationsSent Invitation[]
+  jobsCreated     Job[]
   auditLogs       AuditLog[]
 
   @@index([tenantId, role])
@@ -110,7 +144,6 @@ model Department {
 // A pending offer to join a tenant. The raw token is never stored: only its
 // SHA-256 hash. The User row is created when the invitation is accepted.
 // Status is derived: accepted / revoked / expired (expiresAt) / pending.
-// Candidates sign up on their own, so invitable roles are the tenant roles only.
 model Invitation {
   id          String    @id @default(cuid())
   tenantId    String
@@ -130,6 +163,93 @@ model Invitation {
   @@index([tenantId, email])
   @@index([email])
   @@map("invitations")
+}
+
+model Job {
+  id             String         @id @default(cuid())
+  tenantId       String
+  createdById    String?
+  title          String
+  location       String
+  employmentType EmploymentType @default(FULL_TIME)
+  workMode       WorkMode       @default(ONSITE)
+  description    String
+  requirements   String?
+  status         JobStatus      @default(DRAFT)
+  publishedAt    DateTime?
+  closedAt       DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  createdBy    User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  applications Application[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@map("jobs")
+}
+
+// A person who applied to a company. Scoped to one tenant; the same human
+// applying to two companies is two Candidate rows.
+model Candidate {
+  id        String   @id @default(cuid())
+  tenantId  String
+  email     String
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  applications Application[]
+
+  @@unique([tenantId, email])
+  @@map("candidates")
+}
+
+model Application {
+  id             String           @id @default(cuid())
+  tenantId       String
+  jobId          String
+  candidateId    String
+  stage          ApplicationStage @default(APPLIED)
+  coverNote      String?
+  aiScore        Int?
+  aiSummary      String?
+  aiAnalysis     Json?
+  stageChangedAt DateTime         @default(now())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  job       Job       @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  resume    Resume?
+
+  @@unique([jobId, candidateId])
+  @@index([tenantId, stage])
+  @@index([jobId, stage])
+  @@map("applications")
+}
+
+// CV file. Stored in the database for now behind lib/storage; moving to
+// object storage later only touches that module.
+model Resume {
+  id            String   @id @default(cuid())
+  tenantId      String
+  applicationId String   @unique
+  fileName      String
+  mimeType      String
+  sizeBytes     Int
+  data          Bytes
+  extractedText String?
+  createdAt     DateTime @default(now())
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("resumes")
 }
 
 model AuditLog {
